@@ -48,7 +48,7 @@ h3 {
   margin: 0;
   font-family: var(--font-head);
   font-weight: 900;
-  line-height: 1.04;
+  line-height: 1.1;
   letter-spacing: -0.015em;
 }
 
@@ -189,14 +189,32 @@ ul {
   gap: 12px;
 }
 
+/* Grid items stretch to the tallest tile in the row. Making the item a flex
+   container lets the tile fill that height, so every tile in a row ends up the
+   same height even when its label wraps to a different number of lines. */
+.panic__item {
+  display: flex;
+}
+
+/* Left essentially as designed. I tried anchoring the crop to the top
+   (`center top`) so the discarded quarter would fall behind the chapter-name
+   bar, but the side-by-side screenshot showed it was worse: it cropped through
+   the subject's lower half and read emptier than the symmetric centre crop.
+   Reverted to `center`. The measured ~27% crop is an acceptable thumbnail
+   crop and the subject stays centred and legible.
+   `width: 100%` + `overflow: hidden` are kept as cheap guards against
+   sub-pixel bleed, and `.panic__item` keeps the row heights even. */
 .tile {
   position: relative;
   display: flex;
+  width: 100%;
   min-height: 168px;
   flex-direction: column;
   justify-content: flex-end;
+  overflow: hidden;
   border: 2px solid var(--ink);
   background-color: var(--panel);
+  background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
   text-decoration: none;
@@ -242,7 +260,7 @@ ul {
   display: flex;
   align-items: baseline;
   gap: 14px;
-  padding: 18px 2px;
+  padding: 18px 0;
   border-bottom: 2px solid var(--panel);
   text-decoration: none;
 }
@@ -270,7 +288,7 @@ ul {
 }
 
 .foot {
-  margin-top: 8px;
+  margin-top: 40px;
   padding-top: 32px;
   padding-bottom: 56px;
   border-top: 2px solid var(--ink);
@@ -306,15 +324,24 @@ ul {
   line-height: 1.35;
 }
 
+/* The source art is portrait 1152x1536 (3:4). Two bugs here.
+   1. `aspect-ratio: 4/3` + `object-fit: cover` threw away ~39% of every
+      chapter illustration on desktop and ~70% on mobile.
+   2. The height="1536" attribute hint pinned the box to 1536px tall, so the
+      4:3 ratio never applied at all (both axes were already definite) and the
+      hero rendered 700x1536. `height: auto` hands sizing back to `aspect-ratio`. */
 .chapter-hero__figure {
-  margin: 28px 0 0;
+  max-width: 420px;
+  margin: 28px auto 0;
   border: 2px solid var(--ink);
 }
 
 .chapter-hero__image {
   width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  object-fit: contain;
+  object-position: center;
 }
 
 .remember {
@@ -357,7 +384,7 @@ ul {
   font-family: var(--font-head);
   font-size: clamp(40px, 12vw, 56px);
   font-weight: 900;
-  line-height: 0.9;
+  line-height: 1;
   letter-spacing: -0.03em;
   transition: color 180ms ease;
 }
@@ -378,14 +405,32 @@ ul {
   line-height: 1.45;
 }
 
+/* ROOT CAUSE NOTE. These <img> elements carry width="1152" height="1536"
+   attributes. In CSS those attributes are presentational hints that resolve to
+   a real used `height`, so `width: 100%` was overridden only on the width axis
+   and the height stayed pinned at 1536px. The `aspect-ratio: 3/4` in the old
+   rules was therefore dead code (both axes were already definite), and each
+   3:4 picture was letterboxed into a 332x1536 box: roughly 1100px of empty
+   background above and below a ~437px illustration. Every rule below that
+   sizes a chapter illustration must pin `height` explicitly. */
+
+/* Every step illustration gets the same compact frame. The figure owns the
+   3:4 box (the art's own ratio) at a fixed max width, so all step frames are
+   exactly the same height on every chapter and at every viewport, and the
+   figure centres itself in its grid column on desktop instead of stretching. */
 .step__figure {
-  margin: 0;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
   border: 2px solid var(--ink);
+  background: var(--bg);
 }
 
 .step__image {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  height: 100%;
   object-fit: contain;
   object-position: center;
   background: var(--bg);
@@ -411,14 +456,21 @@ ul {
   line-height: 1.4;
 }
 
+/* Same compact 3:4 frame as the steps, so the DON'T picture lines up with
+   the step pictures rather than ballooning to the full column width. */
 .dont__figure {
-  margin: 0;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
   border: 2px solid var(--ink);
+  background: var(--bg);
 }
 
 .dont__image {
   width: 100%;
-  aspect-ratio: 3 / 4;
+  height: 100%;
   object-fit: contain;
   object-position: center;
   background: var(--bg);
@@ -446,9 +498,13 @@ ul {
   padding: 8px 0 40px;
 }
 
+/* Centred so it does not hang off the left edge of the 760px measure on
+   desktop with ~280px of dead space to its right. */
 .flip__stage {
   position: relative;
+  width: 100%;
   max-width: 420px;
+  margin: 0 auto;
   border: 2px solid var(--ink);
   background: var(--panel);
 }
@@ -521,12 +577,14 @@ ul {
 }
 
 .flip__caption {
-  margin-top: 14px;
+  max-width: 420px;
+  margin: 14px auto 0;
   color: var(--ink2);
   font-family: var(--font-head);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.2em;
+  text-align: center;
   text-transform: uppercase;
 }
 
