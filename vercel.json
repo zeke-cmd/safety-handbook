@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/c0:rest*", "destination": "/index.html" }
+  ]
+}
