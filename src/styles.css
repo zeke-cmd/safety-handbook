@@ -386,7 +386,9 @@ ul {
 .step__image {
   width: 100%;
   aspect-ratio: 3 / 4;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: var(--bg);
 }
 
 .dont {
@@ -417,7 +419,9 @@ ul {
 .dont__image {
   width: 100%;
   aspect-ratio: 3 / 4;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
+  background: var(--bg);
 }
 
 .chapter-foot {
